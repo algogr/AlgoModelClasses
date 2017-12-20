@@ -1,4 +1,6 @@
 #include "algosqltablemodel.h"
+#include <QDebug>
+#include <QSqlError>
 
 AlgoSqlTableModel::AlgoSqlTableModel(QObject* parent,QSqlDatabase db):QSqlTableModel(parent,db)
 {
@@ -56,6 +58,40 @@ void AlgoSqlTableModel::setFilter(const QString &filter)
 {
 
     QSqlTableModel::setFilter(filter);
+}
+
+bool AlgoSqlTableModel::submitAll()
+{
+    QSqlDatabase db=this->database();
+    if (!db.isOpen())
+    {
+            qDebug()<<"DB's not open";
+
+            db.open();
+
+    }
+    if(QSqlTableModel::submitAll())
+        return true;
+    else
+    {
+        qDebug() << "Database Write Error" <<"The database reported an error: " \
+                 << this->lastError().text();
+        return false;
+
+    }
+
+}
+
+bool AlgoSqlTableModel::commit()
+{
+    if(QSqlTableModel::database().commit())
+        return true;
+    else
+    {
+        qDebug() << "Database Write Error" <<"The database reported an error: " \
+                 << this->lastError().text();
+        return false;
+    }
 }
 
 bool AlgoSqlTableModel::removeRow(int row, const QModelIndex &parent)
